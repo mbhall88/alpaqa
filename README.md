@@ -1,4 +1,5 @@
 # Alpaqa: Assembly-Level Profiling And Quality Assessment
+<img src="https://github.com/user-attachments/assets/8ff14b77-4ac3-459a-89e0-be984b87b6cc" align="right" width="170" style="margin-left: 15px;">
 
 Alpaqa analyzes base-level quality scores in bacterial genome assemblies generated from Oxford Nanopore sequencing data.
 
@@ -92,7 +93,7 @@ Alpaqa generates a tab-separated (TSV) report. Each row represents one input ass
 | **LQB_raw/Mbp**      | Low-Quality Bases per Megabase (Raw): Total count of bases with a Phred score between 1 and 5 in the entire file, normalized per million bases.                                                                                |
 | **LQB/Mbp**          | **Low-Quality Bases per Megabase (Filtered):** The density of low-quality bases in the longst contig after excluding (masking) unreliable LQB-dense regions.                                                                   |
 | **MaskThresh**       | Dynamic Masking Threshold: The density threshold that triggered masking. Calculated as 5x the baseline density, but is at least 0.1% (0.001) to prevent over-masking assemblies.                                               |
-| **Masked**           | Total number of bases removed from the  analysis.                                                                                                                                                                              |
+| **Masked_Bases**           | Total number of bases removed from the  analysis.                                                                                                                                                                              |
 | **Contigs_Analyzed** | Shown as X//Y, where X is the number of contigs analyzed (default: longest contig only) and Y is the total number of contigs in the file.                                                                                      |
 | **Bases_Analyzed**   | Total number of bases analyzed.                                                                                                                                                                                                |
 | **Sig4m / 5m / 6m**  | **Significant Motifs:** The top 3 DNA patterns (4, 5, and 6-mers) most significantly linked to quality drops (Q1-5) based on binomial testing. Includes the motif and the percentage of its occurrences that were low quality. |
@@ -106,6 +107,8 @@ For assemblies generated with SUP@v5.2 data, following thresholds were establish
 * **>10 LQBs/Mbp**: Usually unsuitable for high-resolution downstream applications such as transmission or outbreak investigations due to excessive base-level errors.
 
 Beyond systematic sequencing errors, elevated LQB counts may indicate sample contamination, insufficient sequencing depth, or low read quality, which can be further investigated using tools such as [nanoq](https://github.com/esteinig/nanoq) and [CheckM](https://github.com/Ecogenomics/CheckM).
+
+![LQB_vs_errors](https://github.com/user-attachments/assets/62f0f612-9a29-48c0-b8d7-c59f0e229238)
 
 
 ## Automated bacterial genome assembly and alpaqa quality assessment
