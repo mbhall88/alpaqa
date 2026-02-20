@@ -19,7 +19,7 @@ Alpaqa requires the scipy package, which can be installed via conda:
 conda create -n alpaqa python=3.9 scipy -c conda-forge
 
 # Clone the repository
-git clone [https://github.com/yourusername/alpaqa.git](https://github.com/yourusername/alpaqa.git)
+git clone [https://github.com/MBiggel/alpaqa.git](https://github.com/MBiggel/alpaqa.git)
 cd alpaqa
 
 # Activate the environment
