@@ -7,6 +7,8 @@ The tool masks noisy regions and quantifies the number of Low-Quality Bases (LQB
 
 Alpaqa operates on polished assemblies generated with Dorado polish or Medaka2. By detecting systematic error signatures, Alpaqa allows users to flag assemblies that may appear complete but contain motif-specific inaccuracies. This is particularly valuable in applications requiring high base-level accuracy, such as outbreak investigation and transmission analysis.
 
+An automated bacterial genome assembly pipeline for ONT data which includes Medaka2 polishing and quality assessment with alpaqa is available at [boap](https://github.com/MBiggel/boap).
+
 
 
 ## Installation
@@ -108,9 +110,6 @@ For assemblies generated with SUP@v5.2 data, following thresholds were establish
 Beyond systematic sequencing errors, elevated LQB counts may indicate sample contamination, insufficient sequencing depth, or low read quality, which can be further investigated using tools such as [nanoq](https://github.com/esteinig/nanoq) and [CheckM](https://github.com/Ecogenomics/CheckM).
 
 ![LQB_vs_errors](https://github.com/user-attachments/assets/62f0f612-9a29-48c0-b8d7-c59f0e229238)
-
-## Automated bacterial genome assembly and alpaqa quality assessment
-[boap](https://github.com/MBiggel/boap) is an automated bacterial genome assembly pipeline for ONT data which includes Medaka2 polishing and quality assessment with alpaqa.
 
 ## License
 
