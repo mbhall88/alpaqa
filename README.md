@@ -36,7 +36,7 @@ Alpaqa relies on fastq assembly files with phred quality scores generated with d
 
 ```bash
 READS=reads.fastq.gz
-ASSEMBLY=assembly.fasta
+ASSEMBLY=draft_assembly.fasta
 THREADS=16
 
 # medaka2
@@ -46,14 +46,13 @@ medaka_consensus -i $READS -d $ASSEMBLY -o polished_assembly -t $THREADS --bacte
 
 ```bash
 READS=reads.fastq.gz
-ASSEMBLY=assembly.fasta
+ASSEMBLY=draft_assembly.fasta
 THREADS=16
 
 dorado aligner $ASSEMBLY $READS | samtools sort -@ $THREADS -o aligned.bam
 samtools index aligned.bam
 dorado polish aligned.bam $ASSEMBLY -t $THREADS -o polished_assembly --bacteria -q
 ```
-
 
 ## Alpaqa usage
 
@@ -110,11 +109,8 @@ Beyond systematic sequencing errors, elevated LQB counts may indicate sample con
 
 ![LQB_vs_errors](https://github.com/user-attachments/assets/62f0f612-9a29-48c0-b8d7-c59f0e229238)
 
-
 ## Automated bacterial genome assembly and alpaqa quality assessment
-[boap](https://github.com/MBiggel/alpaqa) is an automated bacterial genome assembly pipeline for ONT data which includes  quality assessment with alpaqa.
-
-
+[boap](https://github.com/MBiggel/boap) is an automated bacterial genome assembly pipeline for ONT data which includes Medaka2 polishing and quality assessment with alpaqa.
 
 ## License
 
