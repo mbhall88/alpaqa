@@ -99,8 +99,6 @@ Alpaqa generates a tab-separated (TSV) report. Each row represents one input ass
 | **Bases_Analyzed**   | Total number of bases analyzed.                                                                                                                                                                                                |
 | **Sig4m / 5m / 6m**  | **Significant Motifs:** The top 3 DNA patterns (4, 5, and 6-mers) most significantly linked to quality drops (Q1-5) based on binomial testing. Includes the motif and the percentage of its occurrences that were low quality. |
 
-
-
 ## Interpretation
 For assemblies generated with SUP@v5.2 data, following thresholds were established:
 * **<5 LQBs/Mbp**: Highly accurate. These assemblies typically yield identical or near-identical cgMLST profiles when compared to Illumina-polished references.
@@ -110,6 +108,15 @@ For assemblies generated with SUP@v5.2 data, following thresholds were establish
 Beyond systematic sequencing errors, elevated LQB counts may indicate sample contamination, insufficient sequencing depth, or low read quality, which can be further investigated using tools such as [nanoq](https://github.com/esteinig/nanoq) and [CheckM](https://github.com/Ecogenomics/CheckM).
 
 ![LQB_vs_errors](https://github.com/user-attachments/assets/62f0f612-9a29-48c0-b8d7-c59f0e229238)
+
+## Masking low-quality bases for downstream genotyping
+The helper script fastq2a.py can be used to convert FASTQ assembly files into FASTA format while masking low-quality bases. Replacing bases below a user-defined Q-score threshold with "N" helps maintain robustness in downstream bacterial cgMLST analyses. Tools such as Ridom SeqSphere exclude alleles containing these ambiguous bases to prevent false distance calculations. However, the final count of remaining target loci should be monitored to ensure sufficient resolution for high-resolution typing. For assemblies with 5 to 15 LQBs/Mpb, masking bases with qscores ≤10 provided a good balance between accuracy and genomic resolution.
+
+```bash
+# Example command for masking all bases with a qscore ≤10
+python fastq2a.py -i assembly.fastq -o assembly.masked.fasta -q 10
+
+```
 
 ## License
 
