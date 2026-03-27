@@ -7,17 +7,7 @@ import multiprocessing
 from collections import defaultdict
 from scipy.stats import binomtest
 
-VERSION = "0.1.0"
-
-# ==============================================================================
-# CONFIGURATION PARAMETERS
-# ==============================================================================
-LQB_THRESHOLD = 5           # Phred Q-score threshold (inclusive)
-MIN_CONTIG_LEN = 50000      # Minimum contig length to include in analysis
-LQB_WINDOW_SIZE = 5000      # Window size (bp) for scanning LQB dense regions
-DENSITY_MULTIPLIER = 5.0    # Multiplier for baseline density to trigger masking
-MASK_FLOOR = 0.001          # Absolute minimum LQB density (0.001 = 0.1%)
-# ==============================================================================
+VERSION = "0.1.1"
 
 def get_significance_stars(p_value, num_tests):
     if num_tests == 0: return ""
@@ -59,6 +49,12 @@ def identify_lqb_dense_regions(scores, lqb_threshold, window_size, dynamic_densi
     return indices_to_mask
 
 def analyze_single_file(file_path, args):
+    lqb_threshold = args.lqb_threshold
+    min_contig_len = args.min_contig_len
+    window_size = args.window_size
+    density_multiplier = args.density_multiplier
+    mask_floor = args.mask_floor
+
     file_total_bases = 0 
     file_total_lqb = 0   
     analyzed_base_count = 0 
@@ -87,7 +83,7 @@ def analyze_single_file(file_path, args):
                     records.append({'head': header, 'seq': sequence, 'qual': quality_line, 'len': slen, 'q_scores': q_scores})
                     file_total_bases += slen
                     
-                    file_total_lqb += sum(1 for s in q_scores if 1 <= s <= LQB_THRESHOLD)
+                    file_total_lqb += sum(1 for s in q_scores if 1 <= s <= lqb_threshold)
                     absolute_total_q_sum += sum(q_scores)
 
         if not records:
@@ -97,10 +93,10 @@ def analyze_single_file(file_path, args):
         longest_rec = records[0]
         longest_len = longest_rec['len']
         
-        longest_lqb = sum(1 for s in longest_rec['q_scores'] if 1 <= s <= LQB_THRESHOLD)
+        longest_lqb = sum(1 for s in longest_rec['q_scores'] if 1 <= s <= lqb_threshold)
         
         raw_density = longest_lqb / longest_len if longest_len > 0 else 0
-        mask_threshold_used = max(raw_density * DENSITY_MULTIPLIER, MASK_FLOOR)
+        mask_threshold_used = max(raw_density * density_multiplier, mask_floor)
 
         data_to_analyze = records if args.all_contigs else [records[0]]
 
@@ -109,13 +105,13 @@ def analyze_single_file(file_path, args):
             scores = rec['q_scores']
             seq_len = rec['len']
 
-            if seq_len < MIN_CONTIG_LEN:
+            if seq_len < min_contig_len:
                 continue
             
             scope_total_bases += seq_len
             indices_to_mask = set()
             if not args.no_mask:
-                indices_to_mask = identify_lqb_dense_regions(scores, LQB_THRESHOLD, LQB_WINDOW_SIZE, mask_threshold_used)
+                indices_to_mask = identify_lqb_dense_regions(scores, lqb_threshold, window_size, mask_threshold_used)
             
             total_masked_bases += len(indices_to_mask)
 
@@ -123,7 +119,7 @@ def analyze_single_file(file_path, args):
                 if i in indices_to_mask: continue 
                 analyzed_base_count += 1
                 
-                if 1 <= score <= LQB_THRESHOLD:
+                if 1 <= score <= lqb_threshold:
                     lqb_filtered_count += 1
 
             for k in k_list:
@@ -137,7 +133,7 @@ def analyze_single_file(file_path, args):
                     win_scores = scores[i : i+k]
                     kmer_stats[k][kmer][0] += 1 
                     
-                    if any(1 <= s <= LQB_THRESHOLD for s in win_scores):
+                    if any(1 <= s <= lqb_threshold for s in win_scores):
                         kmer_stats[k][kmer][1] += 1 
 
         avg_q = absolute_total_q_sum / file_total_bases if file_total_bases > 0 else 0
@@ -183,16 +179,25 @@ def analyze_single_file(file_path, args):
 def main():
     parser = argparse.ArgumentParser(
         description=f"ALPAQA v{VERSION}", 
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        usage="python alpaqa.py -i assembly.fastq -o output.tsv --threads 16 [options]",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        add_help=True
     )
     
-    parser.add_argument("-i", "--input", nargs="+", required=True, help="Input fastq assembly files.")
+    parser.add_argument("-i", "--input", nargs="+", required=True, help="Input fastq assembly file(s).")
     parser.add_argument("-o", "--output", default="alpaqa_report.tsv", help="Output TSV filename.")
     parser.add_argument("--report", action="store_true", help="Generate detailed reports on kmer analysis.")
     parser.add_argument("-t", "--threads", type=int, default=1, help="Number of threads.")
-    parser.add_argument("--all-contigs", action="store_true", help="Analyze ALL contigs > MIN_CONTIG_LEN (Default is longest contig only).")
-    parser.add_argument("--no-mask", action="store_true", help="Disable masking of LQB dense regions.")
     parser.add_argument("-v", "--version", action="version", version=f"ALPAQA {VERSION}")
+
+    group = parser.add_argument_group("Advanced")
+    group.add_argument("--all-contigs", action="store_true", help="Analyze ALL contigs > min_contig_len (Default is longest contig only).")
+    group.add_argument("--no-mask", action="store_true", help="Disable masking of LQB dense regions.")
+    group.add_argument("--lqb-threshold", type=int, default=5, help="Phred Q-score threshold (inclusive).")
+    group.add_argument("--min-contig-len", type=int, default=50000, help="Minimum contig length to include.")
+    group.add_argument("--window-size", type=int, default=5000, help="Window size (bp) for scanning LQB dense regions.")
+    group.add_argument("--density-multiplier", type=float, default=5.0, help="Multiplier for baseline density to trigger masking.")
+    group.add_argument("--mask-floor", type=float, default=0.001, help="Absolute minimum LQB density (0.001 = 0.1%%).")
 
     args = parser.parse_args()
     headers = ["Filename", "AvgQ", "LQB_raw/Mbp", "LQB/Mbp", "MaskThresh", "Bases_Masked", "Contigs_Analyzed", "Bases_Analyzed", "Sig4m", "Sig5m", "Sig6m"]

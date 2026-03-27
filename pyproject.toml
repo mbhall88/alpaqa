@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build_backend = "hatchling.build"
+
+[project]
+name = "alpaqa-bio"
+version = "0.1.1"
+description = "a quality control tool for bacterial ONT-only assemblies"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "GPL-3.0-or-later"}
+dependencies = [
+    "scipy>=1.10.0",
+]
+
+[project.scripts]
+alpaqa = "alpaqa:main"
